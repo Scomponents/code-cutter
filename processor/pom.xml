@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <artifactId>code-cutter</artifactId>
+        <groupId>com.intechcore.scomponents.tools.cutter</groupId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>processor</artifactId>
+    <version>${lib.version}</version>
+    <packaging>jar</packaging>
+
+    <name>${project.groupId}:${project.artifactId}</name>
+    <url>https://github.com/Scomponents/code-cutter</url>
+    <description></description>
+
+    <organization>
+        <name>Intechcore GmbH</name>
+        <url>https://www.intechcore.com</url>
+    </organization>
+
+    <developers>
+        <developer>
+            <name>Danila Zhuravliov</name>
+            <email>d.zhuravliov@intechcore.com</email>
+            <organization>Intechcore GmbH</organization>
+            <organizationUrl>https://www.intechcore.com</organizationUrl>
+        </developer>
+        <developer>
+            <name>Gennady Bekasov</name>
+            <email>bekasov.g@gmail.com</email>
+            <organization>Intechcore GmbH</organization>
+            <organizationUrl>https://www.intechcore.com</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git@github.com:Scomponents/code-cutter.git</connection>
+        <developerConnection>scm:git:ssh://github.com:Scomponents/code-cutter.git</developerConnection>
+        <url>https://github.com/Scomponents/code-cutter</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.intechcore.scomponents.tools.cutter</groupId>
+            <artifactId>annotations</artifactId>
+            <version>${lib.version.tag}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.14.0</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <Automatic-Module-Name>com.intechcore.scomponents.tools.cutter.processor</Automatic-Module-Name>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>BuildOnJava11</id>
+            <activation>
+                <jdk>[11,)</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <compilerArgument>-proc:none</compilerArgument>
+                            <compilerArgs>
+                                <arg>--add-exports</arg>
+                                <arg>jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
+
+                                <arg>--add-exports</arg>
+                                <arg>jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
+
+                                <arg>--add-exports</arg>
+                                <arg>jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED</arg>
+
+                                <arg>--add-exports</arg>
+                                <arg>jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</arg>
+
+                                <arg>--add-exports</arg>
+                                <arg>jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED</arg>
+                            </compilerArgs>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <configuration>
+                            <excludePackageNames>com.sun.*:*</excludePackageNames>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>BuildOnJava8</id>
+            <activation>
+                <jdk>1.8</jdk>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>com.sun</groupId>
+                    <artifactId>tools</artifactId>
+                    <version>1.6.0</version>
+                    <scope>system</scope>
+                    <systemPath>${java.home}/../lib/tools.jar</systemPath>
+                </dependency>
+            </dependencies>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <compilerArgument>-proc:none</compilerArgument>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>mavencenralRelease</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <publishingServerId>central</publishingServerId>
+                            <autoPublish>false</autoPublish>
+                            <waitUntil>validated</waitUntil>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+</project>

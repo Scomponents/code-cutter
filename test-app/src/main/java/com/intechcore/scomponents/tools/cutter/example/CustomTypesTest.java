@@ -1,0 +1,86 @@
+package com.intechcore.scomponents.tools.cutter.example;
+
+import com.intechcore.scomponents.tools.cutter.annotations.common.BoolForce;
+import com.intechcore.scomponents.tools.cutter.annotations.CutCode;
+import com.intechcore.scomponents.tools.cutter.annotations.CutCodeProcessConfig;
+import com.intechcore.scomponents.tools.cutter.annotations.common.ParamType;
+
+import java.util.Objects;
+
+public class CustomTypesTest {
+
+    private final String testString = "Private Field Value";
+
+    public void run() {
+        CustomType value = this.createInstance("Create Instance of Custom Type -> Param 1", 42);
+        String stringResult = "<EMPTY>";
+        int intResult = 0;
+        if (value != null) {
+            stringResult = value.field1;
+            intResult = value.field2;
+        }
+
+        System.out.println("Custom type string result: " + stringResult);
+        System.out.println("Custom type int result: " + intResult);
+
+        CustomType value2 = this.createInstance_overrideProfile("createInstance_overrideProfile", 52);
+        String stringResult2 = "<EMPTY>";
+        int intResult2 = 0;
+        if (value2 != null) {
+            stringResult2 = value.field1;
+            intResult2 = value.field2;
+        }
+
+        System.out.println("createInstance_overrideProfile string result: " + stringResult2);
+        System.out.println("createInstance_overrideProfile int result: " + intResult2);
+
+        CustomTypesTest that1 = this.testReturnThis1(25);
+        System.out.println("testReturnThis1 : " + (!Objects.equals(this, that1) ? "<NULL>" : "this")); // not that == null because of compiler optimization;
+        CustomTypesTest that2 = this.testReturnThis2(35);
+        System.out.println("testReturnThis2 : " + (!Objects.equals(this, that2) ? "<NULL>" : "this"));
+    }
+
+    @CutCode(withCall = "System.out.println", callParams = {"Create Custom Type Instance - replaced 2"})
+    @CutCode(withCall = "System.out.println", callParams = {"param2"}, callParamsTypes = {ParamType.VARIABLE})
+    @CutCode(profile = "profile1")
+    @CutCode(profile = "profile2")
+    private CustomType createInstance(String param1, int param2) {
+        return new CustomType(param1, param2);
+    }
+
+    @CutCode(profile = "profile1", callParams = {"arg1"}, callParamsTypes = {ParamType.VARIABLE})
+    @CutCode(profile = "profile2", callParams = {"Overrided arg1"}, callParamsTypes = {ParamType.LITERAL})
+    @CutCodeProcessConfig(
+            logProcessing = BoolForce.FORCE_TRUE
+    )
+    private CustomType createInstance_overrideProfile(String arg1, int arg2) {
+        return new CustomType(arg1, arg2);
+    }
+
+    @CutCode(withCall = "System.out.println", callParams = {"param1"}, callParamsTypes = {ParamType.VARIABLE})
+    public CustomTypesTest testReturnThis1(int param1) {
+        System.out.println("testReturnThis1 -> process param1 : " + ++param1);
+        return this;
+    }
+
+    @CutCode(withCall = "System.out.println", callParams = {"param1"}, callParamsTypes = {ParamType.VARIABLE})
+    @CutCode(withCall = "System.out.println", callParams = {"this.testString"}, callParamsTypes = {ParamType.VARIABLE})
+    @CutCodeProcessConfig(
+            returnThisIfFound = BoolForce.FORCE_FALSE,
+            logProcessing = BoolForce.FORCE_TRUE
+    )
+    public CustomTypesTest testReturnThis2(int param1) {
+        System.out.println("testReturnThis2 -> process param1 : " + ++param1);
+        return this;
+    }
+
+    private class CustomType {
+        public final String field1;
+        public final int field2;
+
+        private CustomType(String field1, int field2) {
+            this.field1 = field1;
+            this.field2 = field2;
+        }
+    }
+}

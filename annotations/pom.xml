@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <artifactId>code-cutter</artifactId>
+        <groupId>com.intechcore.scomponents.tools.cutter</groupId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>annotations</artifactId>
+    <version>${lib.version.tag}</version>
+    <packaging>jar</packaging>
+
+    <name>${project.groupId}:${project.artifactId}</name>
+    <url>https://github.com/Scomponents/code-cutter</url>
+    <description></description>
+
+    <properties>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+    </properties>
+
+    <organization>
+        <name>Intechcore GmbH</name>
+        <url>https://www.intechcore.com</url>
+    </organization>
+
+    <developers>
+        <developer>
+            <name>Danila Zhuravliov</name>
+            <email>d.zhuravliov@intechcore.com</email>
+            <organization>Intechcore GmbH</organization>
+            <organizationUrl>https://www.intechcore.com</organizationUrl>
+        </developer>
+        <developer>
+            <name>Gennady Bekasov</name>
+            <email>bekasov.g@gmail.com</email>
+            <organization>Intechcore GmbH</organization>
+            <organizationUrl>https://www.intechcore.com</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git@github.com:Scomponents/code-cutter.git</connection>
+        <developerConnection>scm:git:ssh://github.com:Scomponents/code-cutter.git</developerConnection>
+        <url>https://github.com/Scomponents/code-cutter</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <Automatic-Module-Name>com.intechcore.scomponents.tools.cutter.annotations</Automatic-Module-Name>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>BuildOnJava11</id>
+            <activation>
+                <jdk>[11,)</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>mavencenralRelease</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <publishingServerId>central</publishingServerId>
+                            <autoPublish>false</autoPublish>
+                            <waitUntil>validated</waitUntil>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

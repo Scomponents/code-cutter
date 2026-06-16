@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <artifactId>code-cutter</artifactId>
+        <groupId>com.intechcore.scomponents.tools.cutter</groupId>
+        <version>1.0.0</version>
+    </parent>
+
+    <groupId>com.intechcore.scomponents.example</groupId>
+    <artifactId>test-code-cutter-app</artifactId>
+    <version>${app.version}</version>
+    <packaging>jar</packaging>
+
+    <name>Code Сutter Test Console Application</name>
+    <description>Example desktop application that demonstrates the Code Cutter library
+        working with both Java 8 and Java 11+ versions simultaneously</description>
+
+    <properties>
+        <demo.suffix></demo.suffix>
+        <app.version>${lib.version}${demo.suffix}</app.version>
+        <maven.compiler.source>${javaVersion}</maven.compiler.source>
+        <maven.compiler.target>${javaVersion}</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <testValueToReplace>from profile1</testValueToReplace>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.intechcore.scomponents.tools.cutter</groupId>
+            <artifactId>annotations</artifactId>
+            <version>${lib.version.tag}</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <profiles>
+        <profile>
+            <id>BuildOnJava11</id>
+            <activation>
+                <jdk>[11,)</jdk>
+            </activation>
+            <properties>
+                <javaVersion>11</javaVersion>
+            </properties>
+        </profile>
+        <profile>
+            <id>createDemoVersion</id>
+            <properties>
+                <demo.suffix>-DEMO</demo.suffix>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <annotationProcessorPaths>
+                                <path>
+                                    <groupId>com.intechcore.scomponents.tools.cutter</groupId>
+                                    <artifactId>processor</artifactId>
+                                    <version>${lib.version}</version>
+                                </path>
+                            </annotationProcessorPaths>
+                            <compilerArgs>
+                                <arg>-AINTECHCORE_CUTTER_PROFILES=[
+                                    {
+                                    name:"profile1",
+                                    withCall:"System.out.println",
+                                    params:["${testValueToReplace}"]
+                                    },
+                                    {
+                                    name:"profile2",
+                                    withCall:"System.out.println",
+                                    params:["param1"],
+                                    paramsTypes:["VARIABLE"]
+                                    },
+                                    {
+                                    name:"profile-cut-all"
+                                    }
+                                    ]</arg>
+                                <arg>
+                                    -AINTECHCORE_CUTTER_SETTINGS={
+                                    logProcessing: false
+                                    }
+                                </arg>
+                            </compilerArgs>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <phase>none</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <phase>none</phase>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
