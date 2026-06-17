@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2026-present, Intechcore GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.intechcore.scomponents.tools.cutter.processor;
 
 import com.google.gson.Gson;
@@ -11,7 +27,6 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
-import com.sun.tools.javac.util.Names;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Messager;
@@ -31,6 +46,14 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * The {@code CutCodeProcessor} is an annotation processor that handles
+ * {@link com.intechcore.scomponents.tools.cutter.annotations.CutCode} and
+ * {@link com.intechcore.scomponents.tools.cutter.annotations.common.CutCodes} annotations.
+ * It modifies the Abstract Syntax Tree (AST) of annotated methods to replace
+ * their original bodies with generated code based on the annotation's configuration.
+ * This processor operates at compile time, effectively "cutting" and replacing code.
+ */
 public class CutCodeProcessor extends AbstractProcessor {
     private static final String SETTINGS_CONFIG_KEY = "INTECHCORE_CUTTER_SETTINGS";
     private static final String PROFILES_CONFIG_KEY = "INTECHCORE_CUTTER_PROFILES";
@@ -42,9 +65,20 @@ public class CutCodeProcessor extends AbstractProcessor {
 
     private ProcessingConfig config = new ProcessingConfig();
 
+    /**
+     * Default constructor for the {@code CutCodeProcessor}.
+     */
     public CutCodeProcessor() {
     }
 
+    /**
+     * Initializes the annotation processor with the processing environment.
+     * This method is called once per compiler run. It sets up the necessary
+     * utilities like {@code Messager}, {@code JavacElements}, and {@code TreeMaker},
+     * and loads global {@link ProcessingConfig} and {@link ProfileConfig} from options.
+     *
+     * @param processingEnv The processing environment provided by the compiler.
+     */
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
         this.messager = processingEnv.getMessager();
@@ -71,6 +105,11 @@ public class CutCodeProcessor extends AbstractProcessor {
         super.init(processingEnv);
     }
 
+    /**
+     * Returns the set of annotation types supported by this processor.
+     *
+     * @return A set of strings containing the canonical names of the supported annotation types.
+     */
     @Override
     public Set<String> getSupportedAnnotationTypes() {
         return Stream.of(
@@ -80,6 +119,12 @@ public class CutCodeProcessor extends AbstractProcessor {
         .collect(Collectors.collectingAndThen(Collectors.toSet(), Collections::unmodifiableSet)); // for Java8
     }
 
+    /**
+     * Returns the names of the annotation processing options recognized by this processor.
+     * These options are used to configure the behavior of the {@link CutCodeProcessor}.
+     *
+     * @return A set of strings containing the names of the supported options.
+     */
     @Override
     public Set<String> getSupportedOptions() {
         return Stream.of(
@@ -89,11 +134,25 @@ public class CutCodeProcessor extends AbstractProcessor {
         .collect(Collectors.collectingAndThen(Collectors.toSet(), Collections::unmodifiableSet));
     }
 
+    /**
+     * Returns the latest source version supported by this annotation processor.
+     *
+     * @return The latest {@link SourceVersion} supported.
+     */
     @Override
     public SourceVersion getSupportedSourceVersion() {
         return SourceVersion.latest();
     }
 
+    /**
+     * Processes annotations on a set of program elements. This is the main entry point
+     * for the annotation processor. It iterates over elements annotated with
+     * {@link CutCode} or {@link CutCodes} and initiates the code replacement process.
+     *
+     * @param annotations The set of annotations to process.
+     * @param roundEnv    The current processing environment.
+     * @return {@code true} if the annotations were processed by this processor; {@code false} otherwise.
+     */
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         if (roundEnv.processingOver()) {
@@ -106,6 +165,14 @@ public class CutCodeProcessor extends AbstractProcessor {
         return true;
     }
 
+    /**
+     * Handles the replacement process for a single element annotated with {@link CutCode} or {@link CutCodes}.
+     * It extracts the {@link CutCode} annotations, validates the element kind (must be a method),
+     * applies any local processing configuration, and then calls {@link #replaceMethod(Element, CutCode[])}
+     * to modify the method's body.
+     *
+     * @param element The {@code Element} annotated with {@link CutCode} or {@link CutCodes}.
+     */
     private void replacingProcess(Element element) {
         CutCode[] annotations = element.getAnnotationsByType(CutCode.class);
         if (annotations == null || annotations.length == 0) {
@@ -125,6 +192,15 @@ public class CutCodeProcessor extends AbstractProcessor {
         this.replaceMethod(element, annotations);
     }
 
+    /**
+     * Replaces the body of an annotated method with generated code.
+     * This method constructs the final statements, including default return values,
+     * and delegates to the {@link CodeGenerator} to perform the actual AST modification.
+     * It also handles special cases like {@code CompletableFuture} return types.
+     *
+     * @param element     The {@code Element} representing the method to be replaced.
+     * @param annotations An array of {@link CutCode} annotations applied to the method.
+     */
     private void replaceMethod(Element element, CutCode[] annotations) {
         JCTree.JCMethodDecl jcMethodDecl = (JCTree.JCMethodDecl) this.elementUtils.getTree(element);
         JCTree returnType = jcMethodDecl.getReturnType();

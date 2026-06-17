@@ -16,7 +16,7 @@
 
     <name>${project.groupId}:${project.artifactId}</name>
     <url>https://github.com/Scomponents/code-cutter</url>
-    <description></description>
+    <description>Annotations for Intechcore Code Cutter, providing markers for compile-time code transformation</description>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>

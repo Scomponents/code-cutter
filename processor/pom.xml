@@ -16,7 +16,7 @@
 
     <name>${project.groupId}:${project.artifactId}</name>
     <url>https://github.com/Scomponents/code-cutter</url>
-    <description></description>
+    <description>Annotation processor for Intechcore Code Cutter, responsible for compile-time code transformation</description>
 
     <organization>
         <name>Intechcore GmbH</name>
@@ -120,6 +120,14 @@
                         <configuration>
                             <excludePackageNames>com.sun.*:*</excludePackageNames>
                         </configuration>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>
