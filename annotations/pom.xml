@@ -76,6 +76,24 @@
 
     <profiles>
         <profile>
+            <id>mavencenralRelease</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>io.github.mavenplugins</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <ignorePublishedComponents>true</ignorePublishedComponents>
+                            <publishingServerId>central</publishingServerId>
+                            <autoPublish>false</autoPublish>
+                            <waitUntil>validated</waitUntil>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
             <id>BuildOnJava11</id>
             <activation>
                 <jdk>[11,)</jdk>
@@ -89,21 +107,12 @@
                             <skip>true</skip>
                         </configuration>
                     </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>mavencenralRelease</id>
-            <build>
-                <plugins>
                     <plugin>
-                        <groupId>org.sonatype.central</groupId>
+                        <groupId>io.github.mavenplugins</groupId>
                         <artifactId>central-publishing-maven-plugin</artifactId>
-                        <extensions>true</extensions>
                         <configuration>
-                            <publishingServerId>central</publishingServerId>
-                            <autoPublish>false</autoPublish>
-                            <waitUntil>validated</waitUntil>
+                            <skip>true</skip>
+                            <ignorePublishedComponents>true</ignorePublishedComponents>
                         </configuration>
                     </plugin>
                 </plugins>

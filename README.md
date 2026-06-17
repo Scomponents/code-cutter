@@ -2,6 +2,8 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Hits-of-Code](https://hitsofcode.com/github/Scomponents/code-cutter?branch=master&exclude=)](https://hitsofcode.com/github/Scomponents/code-cutter/view?branch=master&exclude=)
+[![Maven Central Version](https://img.shields.io/maven-central/v/com.intechcore.scomponents.tools.cutter/processor?filter=*java8)](https://central.sonatype.com/artifact/com.intechcore.scomponents.tools.cutter/processor/2.0.0-java8)
+[![Maven Central Version](https://img.shields.io/maven-central/v/com.intechcore.scomponents.tools.cutter/processor?filter=!*java8)](https://central.sonatype.com/artifact/com.intechcore.scomponents.tools.cutter/processor/2.0.0)
 
 
 `Intechcore Code Cutter` is a powerful compile-time code processing tool for Java applications, designed to "cut" or replace method bodies based on custom annotations. This allows for dynamic alteration of code behavior at compile-time, providing extreme flexibility for feature toggling, A/B testing, or environment-specific code generation without modifying the source directly.

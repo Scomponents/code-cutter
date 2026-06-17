@@ -176,13 +176,18 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.sonatype.central</groupId>
+                        <groupId>io.github.mavenplugins</groupId>
                         <artifactId>central-publishing-maven-plugin</artifactId>
                         <extensions>true</extensions>
                         <configuration>
                             <publishingServerId>central</publishingServerId>
                             <autoPublish>false</autoPublish>
                             <waitUntil>validated</waitUntil>
+                            <ignorePublishedComponents>true</ignorePublishedComponents>
+                            <excludeArtifacts>
+                                <groupId>com.intechcore.scomponents.tools.cutter</groupId>
+                                <artifactId>annotations</artifactId>
+                            </excludeArtifacts>
                         </configuration>
                     </plugin>
                 </plugins>
