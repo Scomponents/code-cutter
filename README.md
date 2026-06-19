@@ -2,8 +2,8 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Hits-of-Code](https://hitsofcode.com/github/Scomponents/code-cutter?branch=master&exclude=)](https://hitsofcode.com/github/Scomponents/code-cutter/view?branch=master&exclude=)
-[![Maven Central Version](https://img.shields.io/maven-central/v/com.intechcore.scomponents.tools.cutter/processor?filter=*java8)](https://central.sonatype.com/artifact/com.intechcore.scomponents.tools.cutter/processor/2.0.0-java8)
-[![Maven Central Version](https://img.shields.io/maven-central/v/com.intechcore.scomponents.tools.cutter/processor?filter=!*java8)](https://central.sonatype.com/artifact/com.intechcore.scomponents.tools.cutter/processor/2.0.0)
+[![Maven Central Version](https://img.shields.io/maven-central/v/com.intechcore.scomponents.tools.cutter/processor?filter=*java8)](https://central.sonatype.com/artifact/com.intechcore.scomponents.tools.cutter/processor/2.1.0-java8)
+[![Maven Central Version](https://img.shields.io/maven-central/v/com.intechcore.scomponents.tools.cutter/processor?filter=!*java8)](https://central.sonatype.com/artifact/com.intechcore.scomponents.tools.cutter/processor/2.1.0)
 
 
 `Intechcore Code Cutter` is a powerful compile-time code processing tool for Java applications, designed to "cut" or replace method bodies based on custom annotations. This allows for dynamic alteration of code behavior at compile-time, providing extreme flexibility for feature toggling, A/B testing, or environment-specific code generation without modifying the source directly.
@@ -14,7 +14,11 @@
 *   **Java 8 and 11+ Compatibility:** Built to work seamlessly across different Java versions, leveraging the standard Annotation Processing API.
 *   **Flexible Configuration:** Supports both global and method-specific local configurations to control processing behavior.
 *   **Profile-Based Overrides:** Define reusable profiles for common code cutting scenarios and apply them to annotations.
-*   **Custom Parameter Handling:** Specify whether method parameters should be treated as literals or variable references in the generated code.
+*   **Default Value Handling:** Specify default values for parameters using `ParamType.LITERAL` and `ParamType.VARIABLE`.
+*   **CompletableFuture Support:** Compile-time processing of methods returning `CompletableFuture` with interface proxies.
+*   **Interface Proxy Mechanisms:** Generate proxy implementations for interfaces in `CompletableFuture` chains.
+
+See the [CHANGELOG](CHANGELOG.md) for detailed release notes.
 
 ## 🚀 How it Works
 
@@ -32,13 +36,13 @@ The processor can be configured globally via compiler arguments. These global se
         <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
-            <version>3.8.1</version>
+            <version>3.15.0</version>
             <configuration>
                 <annotationProcessorPaths>
                     <path>
                         <groupId>com.intechcore.scomponents.tools.cutter</groupId>
                         <artifactId>processor</artifactId>
-                        <version>2.0.0</version> <!-- For Java 8, use version 2.0.0-java8 -->
+                        <version>2.1.0</version> <!-- For Java 8, use version 2.1.0-java8 -->
                     </path>
                 </annotationProcessorPaths>
                 <compilerArgs>
