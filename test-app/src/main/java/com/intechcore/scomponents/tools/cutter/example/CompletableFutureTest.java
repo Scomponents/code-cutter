@@ -17,6 +17,8 @@
 package com.intechcore.scomponents.tools.cutter.example;
 
 import com.intechcore.scomponents.tools.cutter.annotations.CutCode;
+import com.intechcore.scomponents.tools.cutter.annotations.CutCodeProcessConfig;
+import com.intechcore.scomponents.tools.cutter.annotations.common.BoolForce;
 import com.intechcore.scomponents.tools.cutter.annotations.common.ParamType;
 
 import java.util.concurrent.CompletableFuture;
@@ -33,17 +35,27 @@ public class CompletableFutureTest {
                 .thenAccept(unused1 -> this.CompletableFutureWithVoid2("CompletableFutureWithVoid2", param2)
                 .thenAccept(unused2 -> this.CompletableFutureWithVoid3("CompletableFutureWithVoid3", param2)
                         .thenRun(() -> {
-                    System.out.println("CompletableFutureWithInterface1 -> " + (fi1 != null ? fi1.getString() : "<EMPTY>"));
-                    System.out.println("CompletableFutureWithInterface2 -> " + (fi2 != null ? fi2.getString() : "<EMPTY>"));
-                    System.out.println("CompletableFutureWithInterface3 -> " + (fi3 != null ? fi3.getString() : "<EMPTY>"));
+                    System.out.println("CompletableFutureWithInterface1 -> ");
+                            IFakeInterface.checkFakeInterfaceValues(fi1);
+                            System.out.println(App.TEST_RESULTS_SEPARATOR);
+                    System.out.println("CompletableFutureWithInterface2 -> ");
+                            IFakeInterface.checkFakeInterfaceValues(fi2);
+                            System.out.println(App.TEST_RESULTS_SEPARATOR);
+                    System.out.println("CompletableFutureWithInterface3 -> ");
+                            IFakeInterface.checkFakeInterfaceValues(fi3);
+                            System.out.println(App.TEST_RESULTS_SEPARATOR);
 
                     System.out.println("CompletableFutureWithString1 -> " + (s1 != null ? s1 : "<EMPTY>"));
+                            System.out.println(App.TEST_RESULTS_SEPARATOR);
                     System.out.println("CompletableFutureWithString2 -> " + (s2 != null ? s2 : "<EMPTY>"));
+                            System.out.println(App.TEST_RESULTS_SEPARATOR);
                     System.out.println("CompletableFutureWithString3 -> " + (s3 != null ? s3 : "<EMPTY>"));
+                            System.out.println(App.TEST_RESULTS_SEPARATOR);
         })))))))));
     }
 
     @CutCode
+    @CutCodeProcessConfig(logProcessing = BoolForce.FORCE_TRUE)
     private CompletableFuture<IFakeInterface> CompletableFutureWithInterface1(String param1, int param2) {
         return createCompletableFutureWithInterface(param1, param2);
     }
@@ -64,7 +76,7 @@ public class CompletableFutureTest {
         return CompletableFuture.supplyAsync(() -> {
             String result = param1 + " Future with interface -> " + param2;
             System.out.println(result);
-            return () -> result;
+            return IFakeInterface.create();
         });
     }
 
@@ -115,10 +127,5 @@ public class CompletableFutureTest {
             System.out.println(result);
             return result;
         });
-    }
-
-    @FunctionalInterface
-    public interface IFakeInterface {
-        String getString();
     }
 }

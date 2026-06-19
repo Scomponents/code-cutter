@@ -39,6 +39,7 @@ public class PrimitiveTypesTests {
         System.out.println("getBoxedByte -> " + this.getBoxedByte());
         System.out.println("getBoxedBoolean -> " + this.getBoxedBoolean());
         System.out.println("getBoxedLong -> " + this.getBoxedLong());
+        System.out.println(App.TEST_RESULTS_SEPARATOR);
     }
 
     @CutCode(withCall = "System.out.println", callParams = {"getBoxedString - replaced 1"})

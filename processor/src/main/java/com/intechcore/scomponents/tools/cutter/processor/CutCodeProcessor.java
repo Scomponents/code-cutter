@@ -20,7 +20,8 @@ import com.google.gson.Gson;
 import com.intechcore.scomponents.tools.cutter.annotations.CutCode;
 import com.intechcore.scomponents.tools.cutter.annotations.CutCodeProcessConfig;
 import com.intechcore.scomponents.tools.cutter.annotations.common.CutCodes;
-import com.sun.tools.javac.code.TypeTag;
+import com.sun.tools.javac.code.Symtab;
+import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree;
@@ -58,10 +59,12 @@ public class CutCodeProcessor extends AbstractProcessor {
     private static final String SETTINGS_CONFIG_KEY = "INTECHCORE_CUTTER_SETTINGS";
     private static final String PROFILES_CONFIG_KEY = "INTECHCORE_CUTTER_PROFILES";
 
+
     private Messager messager;
     private JavacElements elementUtils;
     private TreeMaker treeMaker;
-    private CodeGenerator helper;
+    private Symtab syms;
+    private CodeGenerator coder;
 
     private ProcessingConfig config = new ProcessingConfig();
 
@@ -85,6 +88,7 @@ public class CutCodeProcessor extends AbstractProcessor {
         this.elementUtils = (JavacElements) processingEnv.getElementUtils();
         Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
         this.treeMaker = TreeMaker.instance(context);
+        this.syms = Symtab.instance(context);
 
         Map<String, ProfileConfig> profiles = new HashMap<>();
         Map<String, String> options = processingEnv.getOptions();
@@ -100,7 +104,7 @@ public class CutCodeProcessor extends AbstractProcessor {
             this.config = gson.fromJson(options.get(SETTINGS_CONFIG_KEY), ProcessingConfig.class);
         }
 
-        this.helper = new CodeGenerator(this.treeMaker, this.elementUtils, this.messager, profiles);
+        this.coder = new CodeGenerator(this.treeMaker, this.elementUtils, processingEnv.getFiler(), this.messager, profiles);
 
         super.init(processingEnv);
     }
@@ -198,34 +202,36 @@ public class CutCodeProcessor extends AbstractProcessor {
      * and delegates to the {@link CodeGenerator} to perform the actual AST modification.
      * It also handles special cases like {@code CompletableFuture} return types.
      *
-     * @param element     The {@code Element} representing the method to be replaced.
+     * @param targetMethod     The {@code Element} representing the method to be replaced.
      * @param annotations An array of {@link CutCode} annotations applied to the method.
      */
-    private void replaceMethod(Element element, CutCode[] annotations) {
-        JCTree.JCMethodDecl jcMethodDecl = (JCTree.JCMethodDecl) this.elementUtils.getTree(element);
+    private void replaceMethod(Element targetMethod, CutCode[] annotations) {
+        JCTree.JCMethodDecl jcMethodDecl = (JCTree.JCMethodDecl) this.elementUtils.getTree(targetMethod);
         JCTree returnType = jcMethodDecl.getReturnType();
         String returnTypeStr = returnType.type.asElement().toString();
 
         List<JCTree.JCStatement> finalStatements = List.nil();
 
         if (CompletableFuture.class.getCanonicalName().equals(returnTypeStr)) {
-//            Type futureType = methodSymbol.getReturnType().getTypeArguments().get(0);
+
+            List<Type> futureTypes = returnType.type.getTypeArguments();
+            Type futureType = futureTypes.isEmpty() ? this.syms.objectType : futureTypes.get(0);
 //            JCTree.JCVariableDecl varDecl = this.getProxyVarDecl(futureType);
             finalStatements = List.of(
 //                    varDecl,
                     this.treeMaker.Return(this.treeMaker.Apply(
                             List.nil(),
-                            this.helper.createClassExpression(CompletableFuture.class.getCanonicalName() + ".completedFuture"),
+                            this.coder.createClassExpression(CompletableFuture.class.getCanonicalName() + ".completedFuture"),
 //                            List.of(this.treeMaker.Ident(this.elementUtils.getName("returnedValue")))
-                                    List.of(this.treeMaker.Literal(TypeTag.BOT, null))
+//                                    List.of(this.treeMaker.Literal(TypeTag.BOT, null))
+                                    List.of(this.coder.createCallGetDefaultValue(futureType, targetMethod))
                             )
                     )
             );
         } else {
-            finalStatements = List.of(this.helper.createDefaultReturnStatement(jcMethodDecl, this.config));
-
+            finalStatements = List.of(this.coder.createDefaultReturnStatement(targetMethod, this.config));
         }
 
-        this.helper.replaceBody(jcMethodDecl, annotations, finalStatements, this.config);
+        this.coder.replaceBody(jcMethodDecl, annotations, finalStatements, this.config);
     }
 }

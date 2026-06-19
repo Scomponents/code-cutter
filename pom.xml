@@ -15,7 +15,7 @@
     <properties>
         <javaVersion></javaVersion>
         <javaVersionForLibs></javaVersionForLibs>
-        <lib.version.tag>2.0.0</lib.version.tag>
+        <lib.version.tag>2.1.0</lib.version.tag>
         <lib.version>${lib.version.tag}${javaVersionForLibs}</lib.version>
         <maven.compiler.source>${javaVersion}</maven.compiler.source>
         <maven.compiler.target>${javaVersion}</maven.compiler.target>

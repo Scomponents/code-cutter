@@ -20,15 +20,22 @@ import com.intechcore.scomponents.tools.cutter.annotations.CutCode;
 import com.intechcore.scomponents.tools.cutter.annotations.common.ParamType;
 
 public class App {
+    public static final String TEST_RESULTS_SEPARATOR = "----------------------------------------------------";
     public static void main(String[] args) {
-        System.out.println("START");
+        System.out.println("START " + TEST_RESULTS_SEPARATOR);
 
         void_method_cut_all("void_method_cut_all");
+        System.out.println(App.TEST_RESULTS_SEPARATOR);
         void_method_replace_with_one_call();
+        System.out.println(App.TEST_RESULTS_SEPARATOR);
         void_method_replace_with_several_calls();
+        System.out.println(App.TEST_RESULTS_SEPARATOR);
         void_method_replace_with_call_with_variable("void_method_replace_with_call_with_variable - replaced from variable");
+        System.out.println(App.TEST_RESULTS_SEPARATOR);
         void_method_replace_with_call_with_profile("void_method_replace_with_call_with_profile - replaced from variable");
+        System.out.println(App.TEST_RESULTS_SEPARATOR);
         void_method_replace_with_call_with_profile_cat_all("void_method_replace_with_call_with_profile_cat_all");
+        System.out.println(App.TEST_RESULTS_SEPARATOR);
 
         CompletableFutureTest service = new CompletableFutureTest();
         service.run(3).join();
@@ -39,7 +46,7 @@ public class App {
         CustomTypesTest customTypes = new CustomTypesTest();
         customTypes.run();
 
-        System.out.println("END");
+        System.out.println("END   " + TEST_RESULTS_SEPARATOR);
     }
 
     @CutCode

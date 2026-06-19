@@ -24,9 +24,6 @@ import com.intechcore.scomponents.tools.cutter.annotations.common.ParamType;
 import java.util.Objects;
 
 public class CustomTypesTest {
-
-    private final String testString = "Private Field Value";
-
     public void run() {
         CustomType value = this.createInstance("Create Instance of Custom Type -> Param 1", 42);
         String stringResult = "<EMPTY>";
@@ -37,7 +34,9 @@ public class CustomTypesTest {
         }
 
         System.out.println("Custom type string result: " + stringResult);
+        System.out.println(App.TEST_RESULTS_SEPARATOR);
         System.out.println("Custom type int result: " + intResult);
+        System.out.println(App.TEST_RESULTS_SEPARATOR);
 
         CustomType value2 = this.createInstance_overrideProfile("createInstance_overrideProfile", 52);
         String stringResult2 = "<EMPTY>";
@@ -48,12 +47,21 @@ public class CustomTypesTest {
         }
 
         System.out.println("createInstance_overrideProfile string result: " + stringResult2);
+        System.out.println(App.TEST_RESULTS_SEPARATOR);
         System.out.println("createInstance_overrideProfile int result: " + intResult2);
+        System.out.println(App.TEST_RESULTS_SEPARATOR);
 
         CustomTypesTest that1 = this.testReturnThis1(25);
         System.out.println("testReturnThis1 : " + (!Objects.equals(this, that1) ? "<NULL>" : "this")); // not that == null because of compiler optimization;
+        System.out.println(App.TEST_RESULTS_SEPARATOR);
         CustomTypesTest that2 = this.testReturnThis2(35);
         System.out.println("testReturnThis2 : " + (!Objects.equals(this, that2) ? "<NULL>" : "this"));
+        System.out.println(App.TEST_RESULTS_SEPARATOR);
+
+        System.out.println("Test " + IFakeInterface.class.getSimpleName() + " :");
+        System.out.println(App.TEST_RESULTS_SEPARATOR);
+        IFakeInterface fakeInterface = this.testInterface();
+        IFakeInterface.checkFakeInterfaceValues(fakeInterface);
     }
 
     @CutCode(withCall = "System.out.println", callParams = {"Create Custom Type Instance - replaced 2"})
@@ -64,11 +72,19 @@ public class CustomTypesTest {
         return new CustomType(param1, param2);
     }
 
+    private class CustomType {
+        public final String field1;
+        public final int field2;
+
+        private CustomType(String field1, int field2) {
+            this.field1 = field1;
+            this.field2 = field2;
+        }
+    }
+
     @CutCode(profile = "profile1", callParams = {"arg1"}, callParamsTypes = {ParamType.VARIABLE})
     @CutCode(profile = "profile2", callParams = {"Overrided arg1"}, callParamsTypes = {ParamType.LITERAL})
-    @CutCodeProcessConfig(
-            logProcessing = BoolForce.FORCE_TRUE
-    )
+    @CutCodeProcessConfig(logProcessing = BoolForce.FORCE_TRUE)
     private CustomType createInstance_overrideProfile(String arg1, int arg2) {
         return new CustomType(arg1, arg2);
     }
@@ -78,6 +94,8 @@ public class CustomTypesTest {
         System.out.println("testReturnThis1 -> process param1 : " + ++param1);
         return this;
     }
+
+    private final String testString = "Private Field Value";
 
     @CutCode(withCall = "System.out.println", callParams = {"param1"}, callParamsTypes = {ParamType.VARIABLE})
     @CutCode(withCall = "System.out.println", callParams = {"this.testString"}, callParamsTypes = {ParamType.VARIABLE})
@@ -90,13 +108,12 @@ public class CustomTypesTest {
         return this;
     }
 
-    private class CustomType {
-        public final String field1;
-        public final int field2;
-
-        private CustomType(String field1, int field2) {
-            this.field1 = field1;
-            this.field2 = field2;
-        }
+    @CutCodeProcessConfig(
+            returnThisIfFound = BoolForce.FORCE_FALSE,
+            logProcessing = BoolForce.FORCE_TRUE
+    )
+    @CutCode(profile = "profile2", callParams = {"replaced testInterface"}, callParamsTypes = {ParamType.LITERAL})
+    public IFakeInterface testInterface() {
+        return IFakeInterface.create();
     }
 }

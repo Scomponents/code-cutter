@@ -28,11 +28,20 @@ import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
 
+import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Objects;
+import javax.tools.JavaFileObject;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -47,7 +56,15 @@ import java.util.stream.Stream;
  * based on {@link com.intechcore.scomponents.tools.cutter.annotations.CutCode} annotations.
  */
 public class CodeGenerator {
+    private static final String PROXY_CLASS_NAME = "AnyInterfaceProxyFactory";
+    private static final String PROXY_JAVA_FILE_PATH = "com/intechcore/scomponents/tools/cutter/processor/generate/";
+    private static final String PROXY_JAVA_CLASS_PATH = "/" + PROXY_JAVA_FILE_PATH + PROXY_CLASS_NAME + ".java";
+    private static final String PROXY_CALL_EXPRESSION = PROXY_JAVA_FILE_PATH.replace('/', '.');
+
+    private Set<String> generatedProxies = new HashSet<>();
+
     private final TreeMaker treeMaker;
+    private final Filer filer;
     private final JavacElements elementUtils;
     private final Messager messager;
     private final Map<String, ProfileConfig> profiles;
@@ -57,16 +74,19 @@ public class CodeGenerator {
      *
      * @param treeMaker    The {@code TreeMaker} instance for creating AST nodes.
      * @param elementUtils The {@code JavacElements} instance for utility methods related to elements.
+     * @param filer        The {@code Filer} instance to generate java class.
      * @param messager     The {@code Messager} instance for reporting errors and warnings.
      * @param profiles     A map of {@link ProfileConfig} instances, keyed by profile name,
      *                     used to merge annotation data.
      */
     public CodeGenerator(TreeMaker treeMaker,
                          JavacElements elementUtils,
+                         Filer filer,
                          Messager messager,
                          Map<String, ProfileConfig> profiles) {
         this.treeMaker = treeMaker;
         this.elementUtils = elementUtils;
+        this.filer = filer;
         this.messager = messager;
         this.profiles = profiles;
     }
@@ -98,11 +118,12 @@ public class CodeGenerator {
      * For object types, it returns {@code null} or {@code this} if {@code returnThisIfFound} is enabled
      * in the {@link ProcessingConfig} and the original method body contained "return this;".
      *
-     * @param jcMethodDecl The {@code JCTree.JCMethodDecl} representing the method.
+     * @param targetMethod The {@code Element} representing the target element.
      * @param config       The {@link ProcessingConfig} providing processing options.
      * @return A {@code JCTree.JCStatement} representing the default return statement.
      */
-    public JCTree.JCStatement createDefaultReturnStatement(JCTree.JCMethodDecl jcMethodDecl, ProcessingConfig config) {
+    public JCTree.JCStatement createDefaultReturnStatement(Element targetMethod, ProcessingConfig config) {
+        JCTree.JCMethodDecl jcMethodDecl = (JCTree.JCMethodDecl) this.elementUtils.getTree(targetMethod);
         Type returnType = jcMethodDecl.getReturnType().type;
         JCTree.JCStatement result;
         if (returnType.getTag() == TypeTag.VOID) {
@@ -127,7 +148,7 @@ public class CodeGenerator {
                     literal = this.treeMaker.Literal(TypeTag.LONG, 0L);
                     break;
                 case CHAR:
-                    literal = this.treeMaker.Literal(TypeTag.CHAR, 0); // '\0'
+                    literal = this.treeMaker.Literal(TypeTag.CHAR, 0);
                     break;
                 case FLOAT:
                     literal = this.treeMaker.Literal(TypeTag.FLOAT, 0.0f);
@@ -148,7 +169,8 @@ public class CodeGenerator {
             if (shouldReturnThis) {
                 returnLiteral = this.createClassExpression("this");
             } else {
-                returnLiteral = this.treeMaker.Literal(TypeTag.BOT, null);
+//                returnLiteral = this.treeMaker.Literal(TypeTag.BOT, null);
+                returnLiteral = this.createCallGetDefaultValue(returnType, targetMethod);
             }
             result = this.treeMaker.Return(returnLiteral);
 
@@ -165,6 +187,59 @@ public class CodeGenerator {
         }
 
         return result;
+    }
+
+    public JCTree.JCMethodInvocation createCallGetDefaultValue(Type targetType, Element targetMethod) {
+        TypeElement classElement = (TypeElement) targetMethod.getEnclosingElement();
+        PackageElement pkg = this.elementUtils.getPackageOf(classElement);
+        String packageName = pkg.getQualifiedName().toString();
+        String packageHash = Integer.toHexString(packageName.hashCode());
+        String className = PROXY_CLASS_NAME + "_" + packageHash;
+        this.ensureProxyFactoryGenerated(className);
+        JCTree.JCExpression proxyFactoryFunc = this.createClassExpression(
+                getFinalQualifiedProxyClassName(className) + ".defaultValue"
+        );
+        return this.treeMaker.Apply(
+                List.nil(),
+                proxyFactoryFunc,
+                List.of(this.treeMaker.ClassLiteral(targetType))
+        );
+    }
+
+    private void ensureProxyFactoryGenerated(String className) {
+        String qualifiedName = getFinalQualifiedProxyClassName(className);
+        if (generatedProxies.contains(qualifiedName)) {
+            return;
+        }
+
+        try {
+            InputStream is = getClass().getResourceAsStream(PROXY_JAVA_CLASS_PATH);
+            if (is == null) {
+                this.messager.printMessage(Diagnostic.Kind.ERROR, "Cannot load the proxy content");
+                return;
+            }
+            String source;
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+                source = reader.lines().collect(Collectors.joining("\n"));
+            } catch (IOException e) {
+                this.messager.printMessage(Diagnostic.Kind.ERROR, "Error reading proxy content" + e.getMessage());
+                return;
+            }
+
+            source = source.replace(PROXY_CLASS_NAME, className);
+
+            JavaFileObject file = this.filer.createSourceFile(qualifiedName);
+            try (Writer writer = file.openWriter()) {
+                writer.write(source);
+            }
+            this.generatedProxies.add(qualifiedName);
+        } catch (IOException e) {
+            this.messager.printMessage(Diagnostic.Kind.ERROR, "Common error during create the proxy class code: " + e.getMessage());
+        }
+    }
+
+    private static String getFinalQualifiedProxyClassName(String finalClassName) {
+        return PROXY_CALL_EXPRESSION + finalClassName;
     }
 
     /**
