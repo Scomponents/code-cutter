@@ -56,17 +56,41 @@ import java.util.stream.Stream;
  * based on {@link com.intechcore.scomponents.tools.cutter.annotations.CutCode} annotations.
  */
 public class CodeGenerator {
+    /**
+     * The simple name of the proxy factory class that will be generated.
+     */
     private static final String PROXY_CLASS_NAME = "AnyInterfaceProxyFactory";
+    /**
+     * The package path where the proxy factory class will be generated.
+     */
     private static final String PROXY_JAVA_FILE_PATH = "com/intechcore/scomponents/tools/cutter/processor/generate/";
+    /**
+     * The full classpath to the proxy factory template resource.
+     */
     private static final String PROXY_JAVA_CLASS_PATH = "/" + PROXY_JAVA_FILE_PATH + PROXY_CLASS_NAME + ".java";
+    /**
+     * The fully qualified package name for generated proxy factories (dots instead of slashes).
+     */
     private static final String PROXY_CALL_EXPRESSION = PROXY_JAVA_FILE_PATH.replace('/', '.');
 
+    /**
+     * A set tracking the fully qualified names of proxy factories that have already been generated
+     * to avoid duplicate generation within the same processing round.
+     */
     private Set<String> generatedProxies = new HashSet<>();
 
+    /** The {@code TreeMaker} instance for creating AST nodes. */
     private final TreeMaker treeMaker;
+    /** The {@code Filer} instance for generating new Java source files. */
     private final Filer filer;
+    /** The {@code JavacElements} instance for utility methods related to elements. */
     private final JavacElements elementUtils;
+    /** The {@code Messager} instance for reporting errors, warnings, and notes. */
     private final Messager messager;
+    /**
+     * A map of {@link ProfileConfig} instances, keyed by profile name,
+     * used to merge annotation data during code generation.
+     */
     private final Map<String, ProfileConfig> profiles;
 
     /**
@@ -189,6 +213,18 @@ public class CodeGenerator {
         return result;
     }
 
+    /**
+     * Creates a method invocation expression that calls the generated proxy factory's
+     * {@code defaultValue} method for the specified type. This is used to obtain
+     * a default value for any type, including interface types.
+     *
+     * <p>The proxy factory class name is derived from the package name of the target
+     * method's enclosing class, ensuring unique factory classes per package.</p>
+     *
+     * @param targetType   The {@code Type} for which a default value is needed.
+     * @param targetMethod The {@code Element} representing the method being processed.
+     * @return A {@code JCTree.JCMethodInvocation} representing the factory method call.
+     */
     public JCTree.JCMethodInvocation createCallGetDefaultValue(Type targetType, Element targetMethod) {
         TypeElement classElement = (TypeElement) targetMethod.getEnclosingElement();
         PackageElement pkg = this.elementUtils.getPackageOf(classElement);

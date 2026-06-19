@@ -28,10 +28,13 @@ import com.intechcore.scomponents.tools.cutter.annotations.CutCodeProcessConfig;
 class ProcessingConfig {
     /**
      * Global setting for whether to log processing details.
+     * Defaults to {@code true}. Can be overridden per-method via {@link CutCodeProcessConfig#logProcessing()}.
      */
     public boolean logProcessing;
     /**
-     * Global setting for whether to return 'this' if a cut code is found.
+     * Global setting for whether to return 'this' if a cut code is found and the method
+     * body originally contained "return this;".
+     * Defaults to {@code true}. Can be overridden per-method via {@link CutCodeProcessConfig#returnThisIfFound()}.
      */
     public boolean returnThisIfFound;
 

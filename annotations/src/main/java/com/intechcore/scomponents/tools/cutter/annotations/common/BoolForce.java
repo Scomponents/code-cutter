@@ -25,14 +25,17 @@ public enum BoolForce {
     /**
      * Indicates that no explicit boolean force is applied, and the decision
      * should be based on default behavior or other configurations.
+     * This is the default value when no explicit override is specified.
      */
     NONE,
     /**
      * Forces the boolean value to be {@code false}.
+     * This will override any global or default configuration.
      */
     FORCE_FALSE,
     /**
      * Forces the boolean value to be {@code true}.
+     * This will override any global or default configuration.
      */
     FORCE_TRUE
 }

@@ -25,11 +25,13 @@ import com.intechcore.scomponents.tools.cutter.annotations.CutCode;
 public enum ParamType {
     /**
      * Indicates that the parameter string should be treated as a literal value.
+     * The string will be used directly as-is in the generated method call.
      */
     LITERAL,
     /**
      * Indicates that the parameter string should be treated as the name of a
      * variable or a fully qualified expression.
+     * The string will be resolved as a variable/expression in the target scope.
      */
     VARIABLE;
 

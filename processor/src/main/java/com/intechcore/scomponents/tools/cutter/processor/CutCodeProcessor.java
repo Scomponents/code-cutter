@@ -56,16 +56,27 @@ import java.util.stream.Stream;
  * This processor operates at compile time, effectively "cutting" and replacing code.
  */
 public class CutCodeProcessor extends AbstractProcessor {
+    /**
+     * The annotation processor option key for global settings configuration (JSON).
+     */
     private static final String SETTINGS_CONFIG_KEY = "INTECHCORE_CUTTER_SETTINGS";
+    /**
+     * The annotation processor option key for profiles configuration (JSON array).
+     */
     private static final String PROFILES_CONFIG_KEY = "INTECHCORE_CUTTER_PROFILES";
 
-
+    /** The {@code Messager} for reporting diagnostics. */
     private Messager messager;
+    /** The {@code JavacElements} utility for element operations. */
     private JavacElements elementUtils;
+    /** The {@code TreeMaker} for creating AST nodes. */
     private TreeMaker treeMaker;
+    /** The {@code Symtab} for accessing type symbols. */
     private Symtab syms;
+    /** The {@code CodeGenerator} instance for generating replacement code. */
     private CodeGenerator coder;
 
+    /** The global processing configuration, potentially overridden per-method. */
     private ProcessingConfig config = new ProcessingConfig();
 
     /**

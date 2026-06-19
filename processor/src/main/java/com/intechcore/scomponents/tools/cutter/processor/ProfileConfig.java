@@ -31,18 +31,23 @@ import java.util.Arrays;
 class ProfileConfig implements CutCode {
     /**
      * The name of this profile.
+     * Used as the key when looking up profiles by name in the processor configuration.
      */
     public String name;
     /**
      * The method call defined by this profile.
+     * Specifies the fully qualified method call (e.g., "com.example.MyClass.myMethod")
+     * that will replace the annotated method's body when this profile is used.
      */
     public String withCall;
     /**
      * The parameters for the method call defined by this profile.
+     * The interpretation depends on {@link #paramsTypes} (literal vs variable).
      */
     public String[] params;
     /**
      * The types of parameters for the method call defined by this profile.
+     * Each entry should be either "LITERAL" or "VARIABLE" corresponding to {@link ParamType}.
      */
     public String[] paramsTypes;
 
